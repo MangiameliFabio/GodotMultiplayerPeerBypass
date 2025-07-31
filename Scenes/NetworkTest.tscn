@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://brrb2owwkqffr"]
+
+[ext_resource type="Script" uid="uid://dgh1vj32q1apl" path="res://Scripts/Game.gd" id="1_wt6tw"]
+
+[sub_resource type="GDScript" id="GDScript_wt6tw"]
+script/source = "extends CompositeNodeModule
+
+var _U8_value : CompositeNodeValue
+var _U16_value : CompositeNodeValue
+var _U32_value : CompositeNodeValue
+var _U64_value : CompositeNodeValue
+var _S8_value : CompositeNodeValue
+var _S16_value : CompositeNodeValue
+var _S32_value : CompositeNodeValue
+var _S64_value : CompositeNodeValue
+var _HalfFloat_value : CompositeNodeValue
+var _Float_value : CompositeNodeValue
+var _Double_value : CompositeNodeValue
+var _Vector2Type_value : CompositeNodeValue
+var _Vector3Type_value : CompositeNodeValue
+
+var _next_update_gametime : float
+
+# Called when the node enters the scene tree for the first time.
+func _ready_composite_node() -> void:
+	_U8_value = create_synchronized_value(\"U8_value\", 0, CompositeNode.OnChange, CompositeNode.U8)
+	_U16_value = create_synchronized_value(\"U16_value\", 0, CompositeNode.OnChange, CompositeNode.U16)
+	_U32_value = create_synchronized_value(\"U32_value\", 0, CompositeNode.OnChange, CompositeNode.U32)
+	_U64_value = create_synchronized_value(\"U64_value\", 0, CompositeNode.OnChange, CompositeNode.U64)
+	_S8_value = create_synchronized_value(\"S8_value\", 0, CompositeNode.OnChange, CompositeNode.S8)
+	_S16_value = create_synchronized_value(\"S16_value\", 0, CompositeNode.OnChange, CompositeNode.S16)
+	_S32_value = create_synchronized_value(\"S32_value\", 0, CompositeNode.OnChange, CompositeNode.S32)
+	_S64_value = create_synchronized_value(\"S64_value\", 0, CompositeNode.OnChange, CompositeNode.S64)
+	_HalfFloat_value = create_synchronized_value(\"HalfFloat_value\", 0, CompositeNode.OnChange, CompositeNode.HalfFloat)
+	_Float_value = create_synchronized_value(\"Float_value\", 0, CompositeNode.OnChange, CompositeNode.Float)
+	_Double_value = create_synchronized_value(\"Double_value\", 0, CompositeNode.OnChange, CompositeNode.Double)
+	_Vector2Type_value = create_synchronized_value(\"Vector2Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector2Type)
+	_Vector3Type_value = create_synchronized_value(\"Vector3Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector3Type)
+	
+
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(_delta: float) -> void:
+	if not multiplayer.is_server():
+		return
+	var gametime : float = GameTime.GameTime
+	if gametime >= _next_update_gametime:
+		while gametime >= _next_update_gametime:
+			_next_update_gametime += 5
+
+		_U8_value.value = randi_range(0, 255)
+		_U16_value.value = randi_range(0, 65535)
+		_U32_value.value = randi()
+		_U64_value.value = randi_range(0, 1844674407370955161)
+		_S8_value.value = randi_range(-128, 127)
+		_S16_value.value = randi_range(-32768, 32767)
+		_S32_value.value = randi_range(-2147483648, 2147483647)
+		_S64_value.value = randi_range(-922337203685477580, 922337203685477580)
+		_HalfFloat_value.value = randf()
+		_Float_value.value = randf()
+		_Double_value.value = randf()
+		_Vector2Type_value.value = Vector2(randf(), randf())
+		_Vector3Type_value.value = Vector3(randf(), randf(), randf())
+"
+
+[node name="NetworkTest" type="CompositeNode"]
+script = ExtResource("1_wt6tw")
+metadata/_custom_type_script = "uid://dgh1vj32q1apl"
+
+[node name="Node" type="CompositeNodeModule" parent="."]
+script = SubResource("GDScript_wt6tw")

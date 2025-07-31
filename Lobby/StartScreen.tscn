@@ -1,0 +1,158 @@
+[gd_scene load_steps=5 format=3 uid="uid://bdy7iqesfkot3"]
+
+[ext_resource type="Script" uid="uid://j4ro65er3fa4" path="res://Lobby/ENetLobbyUI.gd" id="1_hm334"]
+[ext_resource type="PackedScene" uid="uid://bdjs1ntll6b4j" path="res://Scenes/GameTimeViz.tscn" id="1_jg1lx"]
+[ext_resource type="PackedScene" uid="uid://d0q4ix11pl8mt" path="res://Scenes/mic_level_controls.tscn" id="2_iokh2"]
+[ext_resource type="Script" uid="uid://cww6hu0kehk7q" path="res://Lobby/EOSLobbyUI.gd" id="4_2wedq"]
+
+[node name="StartScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.266667, 0.266667, 0.266667, 1)
+
+[node name="CanvasLayer" parent="." instance=ExtResource("1_jg1lx")]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="MicLevelControls" parent="VBoxContainer" instance=ExtResource("2_iokh2")]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="ENet" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+script = ExtResource("1_hm334")
+metadata/_tab_index = 0
+
+[node name="StartServerButton" type="Button" parent="VBoxContainer/TabContainer/ENet"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Start Server"
+
+[node name="Divider" type="ColorRect" parent="VBoxContainer/TabContainer/ENet"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+color = Color(0.423529, 0.423529, 0.423529, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TabContainer/ENet"]
+layout_mode = 2
+
+[node name="IPAddressLineEdit" type="LineEdit" parent="VBoxContainer/TabContainer/ENet/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter IP to connect to"
+
+[node name="ConnectToServerButton" type="Button" parent="VBoxContainer/TabContainer/ENet/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Connect to Server"
+
+[node name="Divider2" type="ColorRect" parent="VBoxContainer/TabContainer/ENet"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+color = Color(0.423529, 0.423529, 0.423529, 1)
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer/TabContainer/ENet"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartGameButton" type="Button" parent="VBoxContainer/TabContainer/ENet"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Start Game!"
+
+[node name="EOS" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
+visible = false
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+script = ExtResource("4_2wedq")
+metadata/_tab_index = 1
+
+[node name="StartUpEOSButton" type="Button" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+text = "Initialize Epic Online Services"
+
+[node name="ClientIDHBox" type="HBoxContainer" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+
+[node name="ClientIDLabel" type="Label" parent="VBoxContainer/TabContainer/EOS/ClientIDHBox"]
+layout_mode = 2
+text = "Your Epic Client ID: "
+
+[node name="ClientIDInput_readonly" type="LineEdit" parent="VBoxContainer/TabContainer/EOS/ClientIDHBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "(not connected, yet)"
+editable = false
+
+[node name="StartServerButton" type="Button" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+text = "Start Server"
+
+[node name="Divider" type="ColorRect" parent="VBoxContainer/TabContainer/EOS"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+color = Color(0.423529, 0.423529, 0.423529, 1)
+
+[node name="ConnectHBox" type="HBoxContainer" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+
+[node name="JoinClientIDInput" type="LineEdit" parent="VBoxContainer/TabContainer/EOS/ConnectHBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter Epic Client ID to connect to"
+
+[node name="ConnectToServerButton" type="Button" parent="VBoxContainer/TabContainer/EOS/ConnectHBox"]
+layout_mode = 2
+text = "Connect to Server"
+
+[node name="Divider2" type="ColorRect" parent="VBoxContainer/TabContainer/EOS"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+color = Color(0.423529, 0.423529, 0.423529, 1)
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartGameButton" type="Button" parent="VBoxContainer/TabContainer/EOS"]
+layout_mode = 2
+disabled = true
+text = "Start Game!"
+
+[connection signal="pressed" from="VBoxContainer/TabContainer/ENet/StartServerButton" to="VBoxContainer/TabContainer/ENet" method="_on_start_server_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/ENet/HBoxContainer/ConnectToServerButton" to="VBoxContainer/TabContainer/ENet" method="_on_connect_to_server_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/ENet/StartGameButton" to="VBoxContainer/TabContainer/ENet" method="_on_start_game_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/EOS/StartUpEOSButton" to="VBoxContainer/TabContainer/EOS" method="_on_init_EOS_clicked"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/EOS/StartServerButton" to="VBoxContainer/TabContainer/EOS" method="_on_start_server_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/EOS/ConnectHBox/ConnectToServerButton" to="VBoxContainer/TabContainer/EOS" method="_on_connect_to_server_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TabContainer/EOS/StartGameButton" to="VBoxContainer/TabContainer/EOS" method="_on_start_game_button_pressed"]

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AsyncStartGameProcess" load_steps=2 format=3 uid="uid://bobpvybi2nmoh"]
+
+[ext_resource type="Script" uid="uid://ci8ldmpll6g3y" path="res://Scripts/multiplayer/AsyncStartGameProcess.gd" id="1_e74ns"]
+
+[resource]
+script = ExtResource("1_e74ns")
+GameScenePath = "uid://brrb2owwkqffr"

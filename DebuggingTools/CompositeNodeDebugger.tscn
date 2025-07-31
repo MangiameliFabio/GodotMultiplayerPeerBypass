@@ -1,0 +1,212 @@
+[gd_scene load_steps=8 format=3 uid="uid://cli1fxics8sn7"]
+
+[ext_resource type="Script" uid="uid://cwmca1turxtvi" path="res://DebuggingTools/composite_nodes_tree.gd" id="1_un1sb"]
+[ext_resource type="Script" uid="uid://dw7q40werngiy" path="res://DebuggingTools/composite_node_properties_tree.gd" id="2_2cl4f"]
+[ext_resource type="Script" uid="uid://ehx7rd0uq0mn" path="res://DebuggingTools/composite_node_property_infos.gd" id="3_y8grn"]
+[ext_resource type="Script" uid="uid://dihtbbjgye6l3" path="res://DebuggingTools/communication_lines_tree.gd" id="4_hwfct"]
+[ext_resource type="Script" uid="uid://bghyy7a7taq0v" path="res://DebuggingTools/communication_line_infos.gd" id="5_knc3a"]
+[ext_resource type="Script" uid="uid://b85nrvdo20qhu" path="res://DebuggingTools/voip_info_tree.gd" id="6_kvvhe"]
+[ext_resource type="Script" uid="uid://bi1v5a36lsfs6" path="res://DebuggingTools/voip_peer_info.gd" id="7_qqg52"]
+
+[node name="CompositeNodeDebugger" type="Window"]
+oversampling_override = 1.0
+title = "Debugging"
+position = Vector2i(0, 36)
+size = Vector2i(1280, 720)
+
+[node name="TabContainer" type="TabContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+current_tab = 0
+
+[node name="Composite Node" type="HSplitContainer" parent="TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+metadata/_tab_index = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="TabContainer/Composite Node"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="CompositeNodesTree" type="Tree" parent="TabContainer/Composite Node/MarginContainer"]
+layout_mode = 2
+allow_search = false
+hide_root = true
+scroll_horizontal_enabled = false
+script = ExtResource("1_un1sb")
+
+[node name="MarginContainer2" type="MarginContainer" parent="TabContainer/Composite Node"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TabContainer/Composite Node/MarginContainer2"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SortInit" type="Button" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sort by Init"
+
+[node name="SortAlphabetic" type="Button" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sort Alphabetical"
+
+[node name="CompositeNodePropertiesTree" type="Tree" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+allow_search = false
+hide_root = true
+scroll_horizontal_enabled = false
+script = ExtResource("2_2cl4f")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CompositeNodePropertyInfos" type="RichTextLabel" parent="TabContainer/Composite Node/MarginContainer2/HSplitContainer/ScrollContainer"]
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+fit_content = true
+autowrap_mode = 0
+script = ExtResource("3_y8grn")
+
+[node name="Multiplayer" type="VBoxContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+metadata/_tab_index = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="TabContainer/Multiplayer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="general_debug_label" type="Label" parent="TabContainer/Multiplayer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TabContainer/Multiplayer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="TabContainer/Multiplayer/HSplitContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="CommunicationLinesTree" type="Tree" parent="TabContainer/Multiplayer/HSplitContainer/MarginContainer" node_paths=PackedStringArray("general_debug_info_label")]
+layout_mode = 2
+allow_search = false
+hide_root = true
+scroll_horizontal_enabled = false
+script = ExtResource("4_hwfct")
+general_debug_info_label = NodePath("../../../MarginContainer/general_debug_label")
+
+[node name="MarginContainer2" type="MarginContainer" parent="TabContainer/Multiplayer/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TabContainer/Multiplayer/HSplitContainer/MarginContainer2"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/Multiplayer/HSplitContainer/MarginContainer2/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CompositeNodePropertyInfos" type="RichTextLabel" parent="TabContainer/Multiplayer/HSplitContainer/MarginContainer2/HSplitContainer/ScrollContainer"]
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+fit_content = true
+autowrap_mode = 0
+script = ExtResource("5_knc3a")
+
+[node name="VoIP" type="VBoxContainer" parent="TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+metadata/_tab_index = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TabContainer/VoIP"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="general_debug_label" type="Label" parent="TabContainer/VoIP/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TabContainer/VoIP"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="TabContainer/VoIP/HSplitContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PeersTree" type="Tree" parent="TabContainer/VoIP/HSplitContainer/MarginContainer" node_paths=PackedStringArray("general_debug_info_label")]
+layout_mode = 2
+allow_search = false
+hide_root = true
+scroll_horizontal_enabled = false
+script = ExtResource("6_kvvhe")
+general_debug_info_label = NodePath("../../../MarginContainer/general_debug_label")
+
+[node name="MarginContainer2" type="MarginContainer" parent="TabContainer/VoIP/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TabContainer/VoIP/HSplitContainer/MarginContainer2"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/VoIP/HSplitContainer/MarginContainer2/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PeerInfos" type="RichTextLabel" parent="TabContainer/VoIP/HSplitContainer/MarginContainer2/HSplitContainer/ScrollContainer"]
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+fit_content = true
+autowrap_mode = 0
+script = ExtResource("7_qqg52")
+
+[connection signal="CompositeNodeSelected" from="TabContainer/Composite Node/MarginContainer/CompositeNodesTree" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" method="_on_composite_nodes_tree_composite_node_selected"]
+[connection signal="pressed" from="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/HBoxContainer/SortInit" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" method="_sort_entries_by_init"]
+[connection signal="pressed" from="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/HBoxContainer/SortAlphabetic" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" method="_sort_entries_alphabetic"]
+[connection signal="CallbackSelected" from="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/ScrollContainer/CompositeNodePropertyInfos" method="callback_selected"]
+[connection signal="DataValueSelected" from="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/ScrollContainer/CompositeNodePropertyInfos" method="datavalue_selected"]
+[connection signal="FunctionSelected" from="TabContainer/Composite Node/MarginContainer2/HSplitContainer/VBoxContainer/CompositeNodePropertiesTree" to="TabContainer/Composite Node/MarginContainer2/HSplitContainer/ScrollContainer/CompositeNodePropertyInfos" method="function_selected"]
+[connection signal="CommunicationLineSelected" from="TabContainer/Multiplayer/HSplitContainer/MarginContainer/CommunicationLinesTree" to="TabContainer/Multiplayer/HSplitContainer/MarginContainer2/HSplitContainer/ScrollContainer/CompositeNodePropertyInfos" method="communication_line_selected"]
+[connection signal="PeerSelected" from="TabContainer/VoIP/HSplitContainer/MarginContainer/PeersTree" to="TabContainer/VoIP/HSplitContainer/MarginContainer2/HSplitContainer/ScrollContainer/PeerInfos" method="peer_selected"]

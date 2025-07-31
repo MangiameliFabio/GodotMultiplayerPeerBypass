@@ -1,0 +1,75 @@
+[gd_scene load_steps=3 format=3 uid="uid://d0q4ix11pl8mt"]
+
+[sub_resource type="GDScript" id="GDScript_dymoy"]
+resource_name = "MicLevelProgressbar"
+script/source = "extends ProgressBar
+
+var peak : float
+
+func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+func _process(delta):
+	var current_peak : float = min(
+		AudioServer.get_bus_peak_volume_left_db(AudioServer.get_bus_index(\"MicCapture\"), 0),
+		AudioServer.get_bus_peak_volume_right_db(AudioServer.get_bus_index(\"MicCapture\"), 0))
+	if current_peak > peak:
+		peak = current_peak
+	else:
+		peak -= delta * 40.0
+	
+	value = 100 + peak
+"
+
+[sub_resource type="GDScript" id="GDScript_welw8"]
+resource_name = "MicVolumeSlider"
+script/source = "extends HSlider
+
+var eff : AudioEffect
+
+func _ready():
+	eff = AudioServer.get_bus_effect(AudioServer.get_bus_index(\"MicCapture\"), 0)
+	value_changed.connect(slider_value_changed)
+
+
+func slider_value_changed(newValue:float):
+	eff.volume_db = newValue
+"
+
+[node name="MicLevelControls" type="PanelContainer"]
+offset_left = 833.0
+offset_top = 274.0
+offset_right = 1118.0
+offset_bottom = 380.0
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Microphone Level Control"
+horizontal_alignment = 1
+
+[node name="MicLevelBar" type="ProgressBar" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 20)
+layout_mode = 2
+size_flags_vertical = 4
+show_percentage = false
+script = SubResource("GDScript_dymoy")
+
+[node name="HSlider" type="HSlider" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+min_value = -20.0
+max_value = 20.0
+step = 0.1
+tick_count = 5
+script = SubResource("GDScript_welw8")

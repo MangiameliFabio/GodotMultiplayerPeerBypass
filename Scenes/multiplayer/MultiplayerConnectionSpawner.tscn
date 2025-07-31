@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://ctv4dwramofdd"]
+
+[node name="MultiplayerConnectionSpawner" type="MultiplayerSpawner"]
+_spawnable_scenes = PackedStringArray("uid://c6s1kdjsil646")
+spawn_path = NodePath(".")

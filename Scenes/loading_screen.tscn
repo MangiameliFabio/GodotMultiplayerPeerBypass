@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b74f67o51xgo5"]
 
 [ext_resource type="Script" uid="uid://dlasitrhfgr8f" path="res://scenes/loading_screen.gd" id="1_vdequ"]
-[ext_resource type="PackedScene" uid="uid://ddmrqe25psrgx" path="res://Scenes/multiplayer/loading_player_connection.tscn" id="2_ry6iw"]
+[ext_resource type="PackedScene" uid="uid://ddmrqe25psrgx" path="res://scenes/multiplayer/loading_player_connection.tscn" id="2_ry6iw"]
 
 [node name="LoadingScreen" type="CanvasLayer"]
 layer = 10

@@ -1,0 +1,118 @@
+[gd_scene load_steps=7 format=3 uid="uid://b6gx00r7tj3kn"]
+
+[ext_resource type="Script" uid="uid://c3xra3mks5qme" path="res://scripts/CharacterPlayerInput.gd" id="1_3vyb7"]
+
+[sub_resource type="GDScript" id="GDScript_g2els"]
+script/source = "extends CompositeNodeModuleCharacterBody3D
+
+@export var moveSpeed := 5.0
+@export var speedMultiplicator := 2
+
+var acceleration := 50.0
+var _current_move_speed = 0
+
+var physical_position : CompositeNodeValue
+var transfrom_provider : CompositeNodeValue
+
+func _ready_composite_node() -> void:
+	physical_position = create_non_synchronized_value(&\"PhysicalPosition\", global_position)
+	transfrom_provider = create_non_synchronized_value(&\"TransformProvider\", self)
+	
+	register_function(&\"TeleportTo\", UpdateTransfrom)
+	register_data_updated_callback(&\"ForwardDirection\", forward_dir_updated)
+	
+	_composite_node.GetCommunicationLine().add_function_definition(&\"UpdatePosition\", update_pos, [CommunicationLine.Vector3Type, CommunicationLine.Vector3Type], CommunicationLine.None, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE)
+	
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _ready_authority() -> void:
+	if _composite_node.GetCommunicationLine().is_communication_authority():
+		$MeshInstance3D.visible = false
+
+func UpdateTransfrom(newTransform: Transform3D, dir: Vector3):
+	global_transform = newTransform
+	
+	_composite_node.CallFunction(&\"ResetForwardDirection\", [dir])
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if _composite_node.GetCommunicationLine().is_communication_authority():
+		_current_move_speed = moveSpeed
+		var direction = updateDirection()
+		
+		velocity = direction * _current_move_speed
+		
+		move_and_slide()
+		
+		_composite_node.GetCommunicationLine().call_function_on_peers(&\"UpdatePosition\", [global_rotation, global_position])
+		
+	_composite_node.SetData(&\"PhysicalPosition\", global_position)
+
+func update_pos(_sender: int, rot, pos):
+	global_rotation = rot
+	global_position = pos
+
+func updateDirection() -> Vector3:
+	var dir = Vector3.ZERO
+	if Input.is_action_pressed(\"move_forward\"):
+		dir += -get_global_transform().basis.z
+	if Input.is_action_pressed(\"move_backward\"):
+		dir += get_global_transform().basis.z
+	if Input.is_action_pressed(\"strafe_left\"):
+		dir += -get_global_transform().basis.x
+	if Input.is_action_pressed(\"strafe_right\"):
+		dir += get_global_transform().basis.x
+	if Input.is_action_pressed(\"jump\"):
+		dir += get_global_transform().basis.y
+	if Input.is_action_pressed(\"crouch\"):
+		dir += -get_global_transform().basis.y
+	if Input.is_action_pressed(\"sprint\"):
+		_current_move_speed = moveSpeed * speedMultiplicator
+	
+	return dir.normalized()
+
+func forward_dir_updated(newForward:Vector3):
+	basis = Basis.looking_at(newForward)
+"
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_u8vuu"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u8vuu"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_3vyb7"]
+material = SubResource("StandardMaterial3D_u8vuu")
+
+[sub_resource type="GDScript" id="GDScript_3vyb7"]
+script/source = "extends Camera3D
+
+var _composite_node : CompositeNode
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	_composite_node = CompositeNode.GetCompositeNodeInParents(self)
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_composite_node.RegisterCallback(\"init_authority\", init_authority)
+
+func init_authority(player_id:int):
+	if _composite_node.GetCommunicationLine().is_communication_authority():
+		make_current()
+"
+
+[node name="Player" type="CompositeNode"]
+
+[node name="CompositeNodeModuleCharacterBody3D" type="CompositeNodeModuleCharacterBody3D" parent="."]
+script = SubResource("GDScript_g2els")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CompositeNodeModuleCharacterBody3D"]
+shape = SubResource("SphereShape3D_u8vuu")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CompositeNodeModuleCharacterBody3D"]
+mesh = SubResource("SphereMesh_3vyb7")
+skeleton = NodePath("../CollisionShape3D")
+
+[node name="Camera3D" type="Camera3D" parent="CompositeNodeModuleCharacterBody3D"]
+script = SubResource("GDScript_3vyb7")
+
+[node name="CompositeNodeModule" type="CompositeNodeModule" parent="."]
+script = ExtResource("1_3vyb7")

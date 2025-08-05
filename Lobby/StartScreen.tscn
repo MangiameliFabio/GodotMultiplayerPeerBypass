@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://bdy7iqesfkot3"]
 
 [ext_resource type="Script" uid="uid://j4ro65er3fa4" path="res://Lobby/ENetLobbyUI.gd" id="1_hm334"]
-[ext_resource type="PackedScene" uid="uid://bdjs1ntll6b4j" path="res://Scenes/GameTimeViz.tscn" id="1_jg1lx"]
-[ext_resource type="PackedScene" uid="uid://d0q4ix11pl8mt" path="res://Scenes/mic_level_controls.tscn" id="2_iokh2"]
+[ext_resource type="PackedScene" uid="uid://bdjs1ntll6b4j" path="res://scenes/GameTimeViz.tscn" id="1_jg1lx"]
+[ext_resource type="PackedScene" uid="uid://d0q4ix11pl8mt" path="res://scenes/mic_level_controls.tscn" id="2_iokh2"]
 [ext_resource type="Script" uid="uid://cww6hu0kehk7q" path="res://Lobby/EOSLobbyUI.gd" id="4_2wedq"]
 
 [node name="StartScreen" type="Control"]

@@ -159,8 +159,8 @@ func loading_finished(_sender_id: int):
 	get_tree().paused = false
 
 	var local_connection := Global.ConnectionHandler.get_my_connection()
-	local_connection.set_state(999, MultiplayerConnection.States.InGame)
 	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.InGame])
+	local_connection.set_state(999, MultiplayerConnection.States.InGame)
 
 func await_composite_node_by_id(compositeID:int) -> CompositeNode:
 	var composite_node := CompositeNode.GetCompositeNodeByID(compositeID)

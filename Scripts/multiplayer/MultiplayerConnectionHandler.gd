@@ -106,8 +106,8 @@ func _on_player_connected(newly_connected_id):
 		for connection in multiplayer_connections: #We need to create the existing connections on the client
 			communication_line.call_function_on_peer(&"create_new_multiplayer_connection", [connection], newly_connected_id)
 		
-		create_new_multiplayer_connection(999, newly_connected_id)
 		communication_line.call_function_on_peers(&"create_new_multiplayer_connection", [newly_connected_id])
+		create_new_multiplayer_connection(999, newly_connected_id)
 	
 	if newly_connected_id != communication_line.get_local_multiplayer_id():
 		# every peer should tell the new peer its voip_id!

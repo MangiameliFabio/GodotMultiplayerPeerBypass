@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://ddmrqe25psrgx"]
 
-[ext_resource type="Script" uid="uid://xpusmp0gpf2d" path="res://Scripts/multiplayer/LoadingPlayerConnectionUI.gd" id="1_cnfur"]
+[ext_resource type="Script" uid="uid://xpusmp0gpf2d" path="res://scripts/multiplayer/LoadingPlayerConnectionUI.gd" id="1_cnfur"]
 
 [node name="LoadingPlayerConnection" type="PanelContainer"]
 custom_minimum_size = Vector2(150, 0)

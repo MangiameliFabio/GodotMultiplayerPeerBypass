@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c6s1kdjsil646"]
 
-[ext_resource type="Script" uid="uid://cakesexfjnnwy" path="res://Scripts/multiplayer/MultiplayerConnection.gd" id="1_8cyay"]
-[ext_resource type="Script" uid="uid://cutldlm1cakwl" path="res://Scripts/multiplayer/PlayerVoip.gd" id="2_n3igq"]
+[ext_resource type="Script" uid="uid://cakesexfjnnwy" path="res://scripts/multiplayer/MultiplayerConnection.gd" id="1_8cyay"]
+[ext_resource type="Script" uid="uid://cutldlm1cakwl" path="res://scripts/multiplayer/PlayerVoip.gd" id="2_n3igq"]
 
 [node name="MultiplayerConnection" type="Node"]
 script = ExtResource("1_8cyay")

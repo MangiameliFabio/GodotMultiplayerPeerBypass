@@ -128,7 +128,7 @@ func physics_frame_sync(_sender_id: int, physics_sync_base_time:float):
 func _process(delta:float):
 	for timer in _interval_tick_timers.values():
 		timer.update()
-	if communication_line.is_server():
+	if communication_line and communication_line.is_server():
 		_seconds_to_physics_sync -= delta
 		if _seconds_to_physics_sync <= 0:
 			_seconds_to_physics_sync += 5

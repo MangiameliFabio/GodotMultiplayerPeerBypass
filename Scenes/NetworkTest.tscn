@@ -1,69 +1,111 @@
 [gd_scene load_steps=3 format=3 uid="uid://brrb2owwkqffr"]
 
-[ext_resource type="Script" uid="uid://dgh1vj32q1apl" path="res://Scripts/Game.gd" id="1_wt6tw"]
+[ext_resource type="Script" uid="uid://dgh1vj32q1apl" path="res://scripts/Game.gd" id="1_wt6tw"]
 
-[sub_resource type="GDScript" id="GDScript_wt6tw"]
-script/source = "extends CompositeNodeModule
+[sub_resource type="GDScript" id="GDScript_d10h7"]
+script/source = "extends Node
 
-var _U8_value : CompositeNodeValue
-var _U16_value : CompositeNodeValue
-var _U32_value : CompositeNodeValue
-var _U64_value : CompositeNodeValue
-var _S8_value : CompositeNodeValue
-var _S16_value : CompositeNodeValue
-var _S32_value : CompositeNodeValue
-var _S64_value : CompositeNodeValue
-var _HalfFloat_value : CompositeNodeValue
-var _Float_value : CompositeNodeValue
-var _Double_value : CompositeNodeValue
-var _Vector2Type_value : CompositeNodeValue
-var _Vector3Type_value : CompositeNodeValue
+@export var test_scene : String
+@export var player_scene : String
+@export var MyParent : Node
 
-var _next_update_gametime : float
+var cl : CommunicationLine
 
 # Called when the node enters the scene tree for the first time.
-func _ready_composite_node() -> void:
-	_U8_value = create_synchronized_value(\"U8_value\", 0, CompositeNode.OnChange, CompositeNode.U8)
-	_U16_value = create_synchronized_value(\"U16_value\", 0, CompositeNode.OnChange, CompositeNode.U16)
-	_U32_value = create_synchronized_value(\"U32_value\", 0, CompositeNode.OnChange, CompositeNode.U32)
-	_U64_value = create_synchronized_value(\"U64_value\", 0, CompositeNode.OnChange, CompositeNode.U64)
-	_S8_value = create_synchronized_value(\"S8_value\", 0, CompositeNode.OnChange, CompositeNode.S8)
-	_S16_value = create_synchronized_value(\"S16_value\", 0, CompositeNode.OnChange, CompositeNode.S16)
-	_S32_value = create_synchronized_value(\"S32_value\", 0, CompositeNode.OnChange, CompositeNode.S32)
-	_S64_value = create_synchronized_value(\"S64_value\", 0, CompositeNode.OnChange, CompositeNode.S64)
-	_HalfFloat_value = create_synchronized_value(\"HalfFloat_value\", 0, CompositeNode.OnChange, CompositeNode.HalfFloat)
-	_Float_value = create_synchronized_value(\"Float_value\", 0, CompositeNode.OnChange, CompositeNode.Float)
-	_Double_value = create_synchronized_value(\"Double_value\", 0, CompositeNode.OnChange, CompositeNode.Double)
-	_Vector2Type_value = create_synchronized_value(\"Vector2Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector2Type)
-	_Vector3Type_value = create_synchronized_value(\"Vector3Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector3Type)
+func _ready() -> void:
+	cl = CommunicationLineSystem.get_global_communication_line_system().grab_communication_line(\"CooledDing\")
 	
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta: float) -> void:
-	if not _composite_node.GetCommunicationLine().is_server():
-		return
-	var gametime : float = GameTime.GameTime
-	if gametime >= _next_update_gametime:
-		while gametime >= _next_update_gametime:
-			_next_update_gametime += 5
+	cl.add_function_definition(&\"spawn_remotly\", spawn_remotly, [CommunicationLine.StringType, CommunicationLine.S32], CommunicationLine.None, MultiplayerPeer.TRANSFER_MODE_RELIABLE)
+	
+	cl.finish_initialization_and_open_line()
+	
+	await get_tree().create_timer(2).timeout
+	
+	if not cl.is_server(): return
+	spawn(test_scene, cl.get_local_multiplayer_id())
+	
+	var peers := CommunicationLineSystem.get_global_communication_line_system().get_peer_ids()
+	spawn(player_scene, cl.get_local_multiplayer_id())
+	
+	for peer in peers:
+		spawn(player_scene, peer)
+	
+func spawn(scene_to_spawn : String, authority_id: int):
+	var spawned = load_scene(scene_to_spawn)
+	
+	cl.call_function_on_peers(&\"spawn_remotly\", [scene_to_spawn, authority_id])
+	
+	if authority_id == cl.get_local_multiplayer_id():
+		spawned.InitializeAsAuthority()
 
-		_U8_value.value = randi_range(0, 255)
-		_U16_value.value = randi_range(0, 65535)
-		_U32_value.value = randi()
-		_U64_value.value = randi_range(0, 1844674407370955161)
-		_S8_value.value = randi_range(-128, 127)
-		_S16_value.value = randi_range(-32768, 32767)
-		_S32_value.value = randi_range(-2147483648, 2147483647)
-		_S64_value.value = randi_range(-922337203685477580, 922337203685477580)
-		_HalfFloat_value.value = randf()
-		_Float_value.value = randf()
-		_Double_value.value = randf()
-		_Vector2Type_value.value = Vector2(randf(), randf())
-		_Vector3Type_value.value = Vector3(randf(), randf(), randf())
+func spawn_remotly(_sender_id: int, scene_to_spawn : String, authority_id: int):
+	var spawned = load_scene(scene_to_spawn)
+	
+	if authority_id == cl.get_local_multiplayer_id():
+		spawned.InitializeAsAuthority()
+
+func load_scene(path: String) -> Node:
+	var result : Node = null
+	if ResourceLoader.exists(path) :
+		result = ResourceLoader.load(path).instantiate()
+	if result :
+		MyParent.add_child(result)
+	return result
 "
 
-[node name="NetworkTest" type="CompositeNode"]
+[node name="Main" type="CompositeNode"]
 script = ExtResource("1_wt6tw")
 metadata/_custom_type_script = "uid://dgh1vj32q1apl"
 
-[node name="Node" type="CompositeNodeModule" parent="."]
-script = SubResource("GDScript_wt6tw")
+[node name="Spawner" type="Node" parent="." node_paths=PackedStringArray("MyParent")]
+script = SubResource("GDScript_d10h7")
+test_scene = "res://scenes/test_spawnable.tscn"
+player_scene = "res://scenes/player.tscn"
+MyParent = NodePath("..")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7628784, -4.697646, -2.5401)
+size = Vector3(44.16736, 1, 52.732788)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.336666, -3.666669, -13.511278)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7049398, -3.666669, 2.5393124)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.382741, -6.3178725, -10.559651)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+transform = Transform3D(0.4735195, 0, -0.8807833, 0, 1, 0, 0.8807833, 0, 0.4735195, 14.628791, -4.762509, -7.541453)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="."]
+transform = Transform3D(0.6355124, 0, 0.7720906, 0, 1, 0, -0.7720906, 0, 0.6355124, -4.7378902, -3.666669, -6.021227)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="."]
+transform = Transform3D(0.6355124, 0, 0.7720906, 0, 1, 0, -0.7720906, 0, 0.6355124, -5.607248, -6.3178725, -0.3205521)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="."]
+transform = Transform3D(0.98097205, 0, -0.19414875, 0, 1, 0, 0.19414875, 0, 0.98097205, 0.05700469, -4.762509, -2.4528756)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="."]
+transform = Transform3D(-0.091692805, 0, 0.9957873, 0, 1, 0, -0.9957873, 0, -0.091692805, -6.5331516, -3.666669, -5.8502603)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="."]
+transform = Transform3D(-0.091692805, 0, 0.9957873, 0, 1, 0, -0.9957873, 0, -0.091692805, -3.13972, -6.3178725, -1.1878471)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="."]
+transform = Transform3D(0.8336545, 0, 0.5522862, 0, 1, 0, -0.5522862, 0, 0.8336545, -0.61526155, -4.762509, -6.6885443)
+size = Vector3(10.532318, 7.598633, 3.9739685)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7799391, 0.6258554, 0, -0.5763587, 0.7182565, 0.38976696, 0.24393775, -0.3039945, 0.9209135, 0, 12.834511, 0)

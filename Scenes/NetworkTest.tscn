@@ -37,12 +37,9 @@ func _ready_composite_node() -> void:
 	_Vector2Type_value = create_synchronized_value(\"Vector2Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector2Type)
 	_Vector3Type_value = create_synchronized_value(\"Vector3Type_value\", 0, CompositeNode.OnChange, CompositeNode.Vector3Type)
 	
-
-
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	if not multiplayer.is_server():
+	if not _composite_node.GetCommunicationLine().is_server():
 		return
 	var gametime : float = GameTime.GameTime
 	if gametime >= _next_update_gametime:

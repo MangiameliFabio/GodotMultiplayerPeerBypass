@@ -4,6 +4,7 @@ var ConnectionHandler : MultiplayerConnectionHandler
 var GameInstance : Game
 var StateMachine : MultiStateMachine
 var Coms : CommunicationLineSystem
+var communication_line : CommunicationLine
 
 enum State {
 	InLobby,
@@ -19,6 +20,9 @@ var LobbyOutputActivation : MultiStateMachine.StateAction
 var CurrentlyInGame : MultiStateMachine.StateAction
 
 func _ready():
+	var args = OS.get_cmdline_args()
+	print("Command-line arguments:", args)
+		
 	var initialize_response: Dictionary = Steam.steamInitEx(3653700)
 	print("Steam initialization result: %s " % initialize_response)
 	
@@ -28,6 +32,16 @@ func _ready():
 	StateMachine = MultiStateMachine.new()
 	StateMachine.Initialize(State.NumberOfStates)
 	StateMachine.ResetStates([State.InLobby])
+	
+	communication_line = Coms.grab_communication_line(get_path().get_concatenated_names())
+	communication_line.add_function_definition(
+		&"loading_finished",
+		loading_finished,
+		[CommunicationLine.None],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_RELIABLE
+	)
+	communication_line.finish_initialization_and_open_line()
 
 	LobbyOutputActivation = StateMachine.AddStatesAction(self,
 		[], [], [State.InLobby, State.Loading],
@@ -60,6 +74,11 @@ func _ready():
 		LoadingScreen.show_loading_screen,
 		LoadingScreen.hide_loading_screen,
 		false)
+	
+	await get_tree().create_timer(0.5).timeout
+
+	if "--client" in args:
+		DisplayServer.window_set_title("Client")
 
 func activate_all_lobby_voip():
 	for multiplayer_id in ConnectionHandler.multiplayer_connections:
@@ -72,7 +91,7 @@ func deactivate_all_lobby_voip():
 func on_new_connection(multiplayer_connection:MultiplayerConnection):
 	if LobbyOutputActivation.CurrentlyActive:
 		multiplayer_connection.get_voip().activate_lobby_output()
-	if CurrentlyInGame.CurrentlyActive and multiplayer.is_server():
+	if CurrentlyInGame.CurrentlyActive and Coms.is_server():
 		# we are already in game, this has to be a late joiner!
 		# let's get them ready, first, load the level
 		var async_process_signal : SignalHolder = multiplayer_connection\
@@ -81,11 +100,10 @@ func on_new_connection(multiplayer_connection:MultiplayerConnection):
 		# then sync all the already spawned things and spawn the new player
 		GameInstance.player_connected(multiplayer_connection)
 		# and finally set the state of the new player correctly
-		loading_finished.rpc_id(multiplayer_connection.multiplayer_id)
-
+		communication_line.call_function_on_peer(&"loading_finished", [], multiplayer_connection.multiplayer_id)
 
 func on_connection_dropped(multiplayer_connection:MultiplayerConnection):
-	if CurrentlyInGame.CurrentlyActive and multiplayer.is_server():
+	if CurrentlyInGame.CurrentlyActive and Coms.is_server():
 		GameInstance.player_disconnected(multiplayer_connection)
 
 # handling of the F11 key to show the CompositeNode info window.
@@ -131,17 +149,18 @@ func server_start_game_procedure():
 	# this will spawn the players and the cruiser on all clients:
 	GameInstance.start_game()
 	# this will resume the game and hide the loading screen:
-	loading_finished.rpc()
+	await get_tree().create_timer(2).timeout
+	communication_line.call_function_on_peers(&"loading_finished", [CommunicationLine.None])
+	loading_finished(999)
 
-
-@rpc("call_local", "reliable")
-func loading_finished():
+func loading_finished(_sender_id: int):
 	await get_tree().create_timer(0.25).timeout
 	StateMachine.SetUnsetStates([State.InGame], [State.Loading])
 	get_tree().paused = false
 
 	var local_connection := Global.ConnectionHandler.get_my_connection()
-	local_connection.set_state.rpc(MultiplayerConnection.States.InGame)
+	local_connection.set_state(999, MultiplayerConnection.States.InGame)
+	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.InGame])
 
 func await_composite_node_by_id(compositeID:int) -> CompositeNode:
 	var composite_node := CompositeNode.GetCompositeNodeByID(compositeID)

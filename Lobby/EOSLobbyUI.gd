@@ -14,6 +14,8 @@ const MAX_CONNECTIONS = 20
 var main_peer : EOSGMultiplayerPeer
 var voip_peer : EOSGMultiplayerPeer
 
+var communication_line : CommunicationLine
+
 enum State {
 	NotInitialized,
 	Initializing,
@@ -35,7 +37,17 @@ func _ready():
 	Global.ConnectionHandler.ConnectFailed.connect(_on_connect_failed)
 	Global.ConnectionHandler.DisconnectedFromServer.connect(_on_connect_failed)
 	set_state(State.NotInitialized)
-
+	
+	communication_line = CommunicationLineSystem.get_global_communication_line_system().grab_communication_line(get_path().get_concatenated_names())
+	communication_line.add_function_definition(
+		&"add_eos_peer_to_mesh",
+		add_eos_peer_to_mesh,
+		[CommunicationLine.U32],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_RELIABLE
+	)
+	communication_line.finish_initialization_and_open_line();
+	
 func set_state(new_state:State):
 	$StartUpEOSButton.disabled = new_state != State.NotInitialized
 	$StartServerButton.disabled = new_state != State.InitializedAndLoggedIn
@@ -122,7 +134,7 @@ func _on_connect_login_callback(data: Dictionary) -> void:
 func _on_player_connected(connection:MultiplayerConnection):
 	if not is_visible_in_tree():
 		return
-	if connection.multiplayer_id == multiplayer.get_unique_id():
+	if connection.multiplayer_id == communication_line.get_local_multiplayer_id():
 		if connection.multiplayer_id == 1:
 			$MessageLabel.text += "Server created successfully\n"
 			set_state(State.ServerCreated)
@@ -175,30 +187,30 @@ func eos_peer_connection_established(peer_id:int):
 		# want to call ...rpc_id(peer_id...
 		await get_tree().process_frame
 		
-		var eos_peer_id := main_peer.get_peer_user_id(peer_id)
 		# we connect our voip to this new peer ourselves
 		Global.ConnectionHandler.voip_connection.lock_multiplayer_peer()
-		voip_peer.add_mesh_peer(eos_peer_id)
+		voip_peer.add_mesh_peer(main_peer.get_peer_user_id(peer_id))
 		Global.ConnectionHandler.voip_connection.unlock_multiplayer_peer()
 		# tell the new peer to connect to us as well
-		add_eos_peer_to_mesh.rpc_id(peer_id, EOSGMultiplayerPeer.get_local_user_id())
+		communication_line.call_function_on_peer(&"add_eos_peer_to_mesh", [EOSGMultiplayerPeer.get_local_user_id()], peer_id)
 		
 		# and tell all other peers to connect to the new peer and the
 		# new peer to them. (it seems like this has to be done manually in
 		# a mesh network...)
 		for other_peer_id in main_peer.get_all_peers():
 			if other_peer_id != peer_id:
-				add_eos_peer_to_mesh.rpc_id(other_peer_id, eos_peer_id)
-				add_eos_peer_to_mesh.rpc_id(peer_id, main_peer.get_peer_user_id(other_peer_id))
-		
+				communication_line.call_function_on_peer(&"add_eos_peer_to_mesh", [peer_id], other_peer_id)
+				communication_line.call_function_on_peer(&"add_eos_peer_to_mesh", [other_peer_id], peer_id)
 
-@rpc("any_peer", "call_remote", "reliable")
-func add_eos_peer_to_mesh(peer_id:String):
+
+func add_eos_peer_to_mesh(_sender_id: int, peer_id: int):
 	if not Global.ConnectionHandler.voip_connection or not voip_peer:
 		return
+	var eos_peer_id := main_peer.get_peer_user_id(peer_id)
 	Global.ConnectionHandler.voip_connection.lock_multiplayer_peer()
-	voip_peer.add_mesh_peer(peer_id)
+	voip_peer.add_mesh_peer(eos_peer_id)
 	Global.ConnectionHandler.voip_connection.unlock_multiplayer_peer()
+
 
 func _on_connect_failed():
 	if not is_visible_in_tree():
@@ -208,6 +220,6 @@ func _on_connect_failed():
 
 
 func _on_start_game_button_pressed():
-	if multiplayer.is_server():
+	if communication_line.is_server():
 		$StartGameButton.disabled = true
 		Global.server_start_game_procedure()

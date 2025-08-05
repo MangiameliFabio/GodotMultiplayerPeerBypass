@@ -6,6 +6,7 @@ const DEFAULT_SERVER_IP = "127.0.0.1" # IPv4 localhost
 const MAX_CONNECTIONS = 20
 
 var voip_peer : ENetMultiplayerPeer
+var communication_line : CommunicationLine
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -15,11 +16,14 @@ func _ready():
 	Global.ConnectionHandler.ConnectionDisconnected.connect(_on_player_disconnected)
 	Global.ConnectionHandler.ConnectFailed.connect(_on_connect_failed)
 	Global.ConnectionHandler.DisconnectedFromServer.connect(_on_connect_failed)
-
+	
+	communication_line = CommunicationLineSystem.get_global_communication_line_system().grab_communication_line(get_path().get_concatenated_names())
+	communication_line.finish_initialization_and_open_line();
+	
 func _on_player_connected(connection:MultiplayerConnection):
 	if not is_visible_in_tree():
 		return
-	if connection.multiplayer_id == multiplayer.get_unique_id():
+	if connection.multiplayer_id == communication_line.get_local_multiplayer_id():
 		if connection.multiplayer_id == 1:
 			%MessageLabel.text = "Server created successfully\n"
 			%StartGameButton.disabled = false
@@ -75,6 +79,6 @@ func _on_connect_failed():
 
 
 func _on_start_game_button_pressed():
-	if multiplayer.is_server():
+	if communication_line.is_server():
 		%StartGameButton.disabled = true
 		Global.server_start_game_procedure()

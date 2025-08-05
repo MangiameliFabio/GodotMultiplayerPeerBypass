@@ -7,10 +7,12 @@ func RunProcess():
 	Global.get_tree().paused = true
 	ResourceLoaderQueue.queueResource(GameScenePath)
 	var local_connection := Global.ConnectionHandler.get_my_connection()
-	local_connection.set_state.rpc(MultiplayerConnection.States.Loading)
+	local_connection.set_state(999, MultiplayerConnection.States.Loading)
+	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.Loading])
 	await ResourceLoaderQueue.waitForLoadingFinished()
 
-	local_connection.set_state.rpc(MultiplayerConnection.States.InitializingGame)
+	local_connection.set_state(999, MultiplayerConnection.States.InitializingGame)
+	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.InitializingGame])
 	var game : Game = ResourceLoaderQueue.getCachedResource(GameScenePath).instantiate()
 	# the whole tree.current_scene functionality 
 	# should probably not even be used...
@@ -20,4 +22,5 @@ func RunProcess():
 	Global.get_tree().current_scene = game
 	await game.initialize_game()
 
-	local_connection.set_state.rpc(MultiplayerConnection.States.Waiting)
+	local_connection.set_state(999, MultiplayerConnection.States.Waiting)
+	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.Waiting])

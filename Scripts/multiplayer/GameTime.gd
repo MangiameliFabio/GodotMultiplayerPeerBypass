@@ -18,6 +18,8 @@ var _physics_frame_num : int
 var PhysicsFrame : int :
 	get: return _physics_frame_num
 
+var communication_line : CommunicationLine
+
 
 var _interval_tick_timers : Dictionary = {}
 
@@ -25,11 +27,37 @@ var _interval_tick_timers : Dictionary = {}
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	process_physics_priority = -1
-	multiplayer.connected_to_server.connect(on_connected_to_server)
 	_physics_sync_base_times.resize(10)
 	_physics_sync_base_times.fill(GameTime)
+	
+	CommunicationLineSystem.get_global_communication_line_system().connected_to_server.connect(on_connected_to_server)
+	communication_line = CommunicationLineSystem.get_global_communication_line_system().grab_communication_line(get_path().get_concatenated_names())
+	communication_line.finish_initialization_and_open_line()
 	#add_child(load("res://Scripts/GameTimeViz.tscn").instantiate())
-
+	
+	communication_line.add_function_definition(
+		&"sync_request",
+		sync_request,
+		[CommunicationLine.S32],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+	)
+	
+	communication_line.add_function_definition(
+		&"sync_request_answer",
+		sync_request_answer,
+		[CommunicationLine.S32, CommunicationLine.S32],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+	)
+	
+	communication_line.add_function_definition(
+		&"physics_frame_sync",
+		physics_frame_sync,
+		[CommunicationLine.Float],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE
+	)
 
 func _physics_process(_delta: float) -> void:
 	_physics_frame_num += 1
@@ -54,7 +82,7 @@ func send_sync_request():
 	var current_time : int
 	for i in NUMBER_OF_PACKETS_PER_SYNC:
 		current_time = Time.get_ticks_msec()
-		sync_request.rpc_id(1, current_time)
+		communication_line.call_function_on_peer(&"sync_request", [current_time], 1)
 		await get_tree().create_timer(0.2).timeout
 
 	await get_tree().create_timer(0.5).timeout
@@ -76,14 +104,11 @@ func send_sync_request():
 	print("time sync done. game_time: %s" % GameTime)
 
 
-@rpc("any_peer")
-func sync_request(own_time_code:int):
-	var sender_id := multiplayer.get_remote_sender_id()
-	sync_request_answer.rpc_id(sender_id, own_time_code, Time.get_ticks_msec())
+func sync_request(sender_id: int, own_time_code:int):
+	communication_line.call_function_on_peer(&"sync_request_answer", [own_time_code, Time.get_ticks_msec()], sender_id)
 
 
-@rpc("any_peer")
-func sync_request_answer(own_time_code:int, server_game_time:int):
+func sync_request_answer(_sender_id: int, own_time_code:int, server_game_time:int):
 	var current_time : int = Time.get_ticks_msec()
 	var time_since_sent : float = (current_time - own_time_code) / 1000.0
 	var estimated_server_time : int = server_game_time + int((time_since_sent / 2.0) * 1000)
@@ -97,21 +122,21 @@ func sync_request_answer(own_time_code:int, server_game_time:int):
 		"received_time" : current_time
 	})
 
-@rpc("any_peer")
-func physics_frame_sync(physics_sync_base_time:float):
+func physics_frame_sync(_sender_id: int, physics_sync_base_time:float):
 	_physics_frame_num = floori((GameTime - physics_sync_base_time) / get_physics_process_delta_time())
 
 func _process(delta:float):
 	for timer in _interval_tick_timers.values():
 		timer.update()
-	if multiplayer.is_server():
+	if communication_line.is_server():
 		_seconds_to_physics_sync -= delta
 		if _seconds_to_physics_sync <= 0:
 			_seconds_to_physics_sync += 5
 			var sum : float = 0
 			for t in _physics_sync_base_times: sum += t
 			sum /= _physics_sync_base_times.size()
-			physics_frame_sync.rpc(sum)
+			
+			communication_line.call_function_on_peers(&"physics_frame_sync", [sum])
 
 
 func get_interval_timer(interval : float) -> IntervalTickTimer:

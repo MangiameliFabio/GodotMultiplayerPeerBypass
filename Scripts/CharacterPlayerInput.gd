@@ -66,7 +66,7 @@ func ResetForwardDirection(new_forward:Vector3):
 
 
 func PlayerInteractionModeChanged(newMode:E.PlayerInteractionMode):
-	if not is_multiplayer_authority():
+	if not _composite_node.IsAuthority():
 		return
 
 	if newMode != E.PlayerInteractionMode.FirstPerson:
@@ -87,7 +87,7 @@ func PlayerInteractionModeChanged(newMode:E.PlayerInteractionMode):
 
 
 func _process(_delta: float) -> void:
-	if not is_multiplayer_authority():
+	if not _composite_node.IsAuthority():
 		return
 
 	# this is a weird godot quirk, but InputEventAction can't be handled in the _input function
@@ -125,7 +125,7 @@ func _input(event: InputEvent):
 	if _current_interaction_mode.value != E.PlayerInteractionMode.FirstPerson or \
 		Global.StateMachine.IsStateSet(Global.State.MainMenu):
 		return
-	if not is_multiplayer_authority():
+	if not _composite_node.IsAuthority():
 		return
 
 	if event is InputEventMouseMotion:

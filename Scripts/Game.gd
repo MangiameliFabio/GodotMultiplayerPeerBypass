@@ -15,3 +15,6 @@ func initialize_game():
 
 func start_game():
 	pass
+
+func player_disconnected(multiplayer_connection:MultiplayerConnection):
+	pass

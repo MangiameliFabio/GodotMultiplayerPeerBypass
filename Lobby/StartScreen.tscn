@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://bdy7iqesfkot3"]
 
-[ext_resource type="Script" uid="uid://j4ro65er3fa4" path="res://Lobby/ENetLobbyUI.gd" id="1_hm334"]
 [ext_resource type="PackedScene" uid="uid://bdjs1ntll6b4j" path="res://scenes/GameTimeViz.tscn" id="1_jg1lx"]
 [ext_resource type="PackedScene" uid="uid://d0q4ix11pl8mt" path="res://scenes/mic_level_controls.tscn" id="2_iokh2"]
+[ext_resource type="Script" uid="uid://j4ro65er3fa4" path="res://Lobby/ENetLobbyUI.gd" id="3_jg1lx"]
 [ext_resource type="Script" uid="uid://cww6hu0kehk7q" path="res://Lobby/EOSLobbyUI.gd" id="4_2wedq"]
 
 [node name="StartScreen" type="Control"]
@@ -44,7 +44,7 @@ current_tab = 0
 [node name="ENet" type="VBoxContainer" parent="VBoxContainer/TabContainer"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
-script = ExtResource("1_hm334")
+script = ExtResource("3_jg1lx")
 metadata/_tab_index = 0
 
 [node name="StartServerButton" type="Button" parent="VBoxContainer/TabContainer/ENet"]
@@ -77,9 +77,20 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 color = Color(0.423529, 0.423529, 0.423529, 1)
 
-[node name="MessageLabel" type="Label" parent="VBoxContainer/TabContainer/ENet"]
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/TabContainer/ENet"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer/TabContainer/ENet/HSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SignalingServer" type="Label" parent="VBoxContainer/TabContainer/ENet/HSplitContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="StartGameButton" type="Button" parent="VBoxContainer/TabContainer/ENet"]

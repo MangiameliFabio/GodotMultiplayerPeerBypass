@@ -40,6 +40,32 @@ func _ready_composite_node() -> void:
 		print(\"Server: composite node ready \", cl.get_local_peer_bits())
 	else:
 		print(\"Client: composite node ready \", cl.get_local_peer_bits())
+	
+	cl.add_function_definition(
+		&\"server_to_client_call\",
+		server_to_client_call,
+		[CommunicationLine.S32],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_RELIABLE
+	)
+	cl.add_function_definition(
+		&\"client_to_client_call\",
+		client_to_client_call,
+		[CommunicationLine.S32],
+		CommunicationLine.None,
+		MultiplayerPeer.TRANSFER_MODE_RELIABLE
+	)
+	
+func server_to_client_call(sender_id: int, other_peer: int):
+	print(\"	Recived packet from: %d \\n
+			I'am: %d \\n
+			Send it to: %d \\n\" % [sender_id, _composite_node.GetCommunicationLine().get_local_multiplayer_id(), other_peer])
+	_composite_node.GetCommunicationLine().call_function_on_peer(&\"client_to_client_call\",[5],other_peer)
+
+func client_to_client_call(sender_id: int, package: int):
+	print(\"	Recived packet from: %d \\n
+			I'am: %d \\n
+			Package is: %d \\n\" % [sender_id, _composite_node.GetCommunicationLine().get_local_multiplayer_id(), package])
 
 func _ready_authority() -> void:
 	var cl := _composite_node.GetCommunicationLine()
@@ -50,7 +76,13 @@ func _ready_authority() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	if not _composite_node.GetCommunicationLine().is_communication_authority():
+	if _composite_node.IsServer():
+		var ids := CommunicationLineSystem.get_global_communication_line_system().get_peer_ids()
+		if ids.size() < 2: return
+		_composite_node.GetCommunicationLine().call_function_on_peer(&\"server_to_client_call\",[ids[2]],ids[1])
+		
+		
+	if not _composite_node.IsAuthority():
 		return
 	var gametime : float = GameTime.GameTime
 	if gametime >= _next_update_gametime:

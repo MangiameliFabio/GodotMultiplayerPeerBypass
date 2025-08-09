@@ -82,7 +82,7 @@ func send_sync_request():
 	var current_time : int
 	for i in NUMBER_OF_PACKETS_PER_SYNC:
 		current_time = Time.get_ticks_msec()
-		communication_line.call_function_on_peer(&"sync_request", [current_time], 1)
+		#communication_line.call_function_on_peer(&"sync_request", [current_time], 1)
 		await get_tree().create_timer(0.2).timeout
 
 	await get_tree().create_timer(0.5).timeout
@@ -105,7 +105,8 @@ func send_sync_request():
 
 
 func sync_request(sender_id: int, own_time_code:int):
-	communication_line.call_function_on_peer(&"sync_request_answer", [own_time_code, Time.get_ticks_msec()], sender_id)
+	#communication_line.call_function_on_peer(&"sync_request_answer", [own_time_code, Time.get_ticks_msec()], sender_id)
+	pass
 
 
 func sync_request_answer(_sender_id: int, own_time_code:int, server_game_time:int):
@@ -135,8 +136,7 @@ func _process(delta:float):
 			var sum : float = 0
 			for t in _physics_sync_base_times: sum += t
 			sum /= _physics_sync_base_times.size()
-			
-			communication_line.call_function_on_peers(&"physics_frame_sync", [sum])
+			#communication_line.call_function_on_peers(&"physics_frame_sync", [sum])
 
 
 func get_interval_timer(interval : float) -> IntervalTickTimer:

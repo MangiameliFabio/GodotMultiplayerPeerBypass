@@ -78,7 +78,11 @@ func _ready():
 	await get_tree().create_timer(0.5).timeout
 
 	if "--client" in args:
-		DisplayServer.window_set_title("Client")
+		for a in OS.get_cmdline_args():
+			if a.is_valid_int():
+				DisplayServer.window_set_title(str("Client ", a))
+	else:
+		DisplayServer.window_set_title(str("Server ", 1))
 
 func activate_all_lobby_voip():
 	for multiplayer_id in ConnectionHandler.multiplayer_connections:
@@ -91,7 +95,7 @@ func deactivate_all_lobby_voip():
 func on_new_connection(multiplayer_connection:MultiplayerConnection):
 	if LobbyOutputActivation.CurrentlyActive:
 		multiplayer_connection.get_voip().activate_lobby_output()
-	if CurrentlyInGame.CurrentlyActive and Coms.is_server():
+	if CurrentlyInGame.CurrentlyActive and communication_line.is_server():
 		# we are already in game, this has to be a late joiner!
 		# let's get them ready, first, load the level
 		var async_process_signal : SignalHolder = multiplayer_connection\
@@ -103,7 +107,7 @@ func on_new_connection(multiplayer_connection:MultiplayerConnection):
 		communication_line.call_function_on_peer(&"loading_finished", [], multiplayer_connection.multiplayer_id)
 
 func on_connection_dropped(multiplayer_connection:MultiplayerConnection):
-	if CurrentlyInGame.CurrentlyActive and Coms.is_server():
+	if CurrentlyInGame.CurrentlyActive and communication_line.is_server():
 		GameInstance.player_disconnected(multiplayer_connection)
 
 # handling of the F11 key to show the CompositeNode info window.
@@ -151,7 +155,7 @@ func server_start_game_procedure():
 	# this will resume the game and hide the loading screen:
 	await get_tree().create_timer(2).timeout
 	communication_line.call_function_on_peers(&"loading_finished", [CommunicationLine.None])
-	loading_finished(999)
+	loading_finished(-1)
 
 func loading_finished(_sender_id: int):
 	await get_tree().create_timer(0.25).timeout
@@ -160,7 +164,7 @@ func loading_finished(_sender_id: int):
 
 	var local_connection := Global.ConnectionHandler.get_my_connection()
 	local_connection.communication_line.call_function_on_peers(&"set_state", [MultiplayerConnection.States.InGame])
-	local_connection.set_state(999, MultiplayerConnection.States.InGame)
+	local_connection.set_state(-1, MultiplayerConnection.States.InGame)
 
 func await_composite_node_by_id(compositeID:int) -> CompositeNode:
 	var composite_node := CompositeNode.GetCompositeNodeByID(compositeID)

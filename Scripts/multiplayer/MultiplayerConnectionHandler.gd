@@ -22,9 +22,6 @@ func _ready():
 	#multiplayer_connection_spawner = load("res://Scenes/multiplayer/MultiplayerConnectionSpawner.tscn").instantiate()
 	#add_child(multiplayer_connection_spawner)
 	
-	voip_connection = VoIPConnection.new()
-	add_child(voip_connection)
-	
 	CommunicationLineSystem.get_global_communication_line_system().peer_connected.connect(_on_player_connected)
 	CommunicationLineSystem.get_global_communication_line_system().peer_disconnected.connect(_on_player_disconnected)
 	CommunicationLineSystem.get_global_communication_line_system().connection_failed.connect(_on_connected_fail)
@@ -60,17 +57,16 @@ func allow_new_connections():
 
 
 func join_game(peer:MultiplayerPeer, voip_peer:MultiplayerPeer):
-	CommunicationLineSystem.get_global_communication_line_system().initialize(peer)
-	voip_connection.initialize(voip_peer)
-	voip_multiplayer_peer_id = voip_peer.get_unique_id()
+	CommunicationLineSystem.get_global_communication_line_system().set_multiplayer_peer(peer)
+	#voip_connection.initialize(voip_peer)
+	#voip_multiplayer_peer_id = voip_peer.get_unique_id()
 	return true
 
 
 func create_game(peer:MultiplayerPeer, voip_peer:MultiplayerPeer):
-	CommunicationLineSystem.get_global_communication_line_system().initialize(peer)
-	voip_connection.initialize(voip_peer)
-	voip_multiplayer_peer_id = voip_peer.get_unique_id()
-	_on_player_connected(1)
+	CommunicationLineSystem.get_global_communication_line_system().set_multiplayer_peer(peer)
+	#voip_connection.initialize(voip_peer)
+	#voip_multiplayer_peer_id = voip_peer.get_unique_id()
 	return true
 
 
@@ -92,7 +88,7 @@ func get_my_connection() -> MultiplayerConnection:
 
 func _on_player_connected(newly_connected_id):
 	#We only need to wait for the peer if its not ourself
-	if newly_connected_id !=  communication_line.get_local_multiplayer_id():
+	if newly_connected_id != communication_line.get_local_multiplayer_id():
 		peer_states[newly_connected_id] = communication_line.get_peer_state(newly_connected_id)
 		
 		while peer_states[newly_connected_id] != 3: #Check if Peer Communication State is ConnectedOpen:3
@@ -107,7 +103,7 @@ func _on_player_connected(newly_connected_id):
 			communication_line.call_function_on_peer(&"create_new_multiplayer_connection", [connection], newly_connected_id)
 		
 		communication_line.call_function_on_peers(&"create_new_multiplayer_connection", [newly_connected_id])
-		create_new_multiplayer_connection(999, newly_connected_id)
+		create_new_multiplayer_connection(-1, newly_connected_id)
 	
 	if newly_connected_id != communication_line.get_local_multiplayer_id():
 		# every peer should tell the new peer its voip_id!
@@ -156,4 +152,6 @@ func _on_server_disconnected():
 	DisconnectedFromServer.emit()
 
 func _on_peer_state_change(peer_multiplayer_id: int, new_state: int):
+	if new_state == 0:
+		print("STATE IS AASSSSSSSSSSSSSSSSSSS: ", new_state)
 	peer_states[peer_multiplayer_id] = new_state

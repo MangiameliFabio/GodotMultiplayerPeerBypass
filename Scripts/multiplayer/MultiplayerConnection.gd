@@ -66,7 +66,7 @@ func run_async_process(resource_path:String) -> SignalHolder:
 	
 	var trigger_signal : SignalHolder = SignalHolder.new()
 	if communication_line.get_local_peer_bits() == 1: #We are the authority so we can call async_process_remote locally
-		async_process_remote(999, resource_path, next_process_id)
+		async_process_remote(-1, resource_path, next_process_id)
 	else:
 		communication_line.call_function_on_peers(&"async_process_remote", [resource_path, next_process_id], 1) #Function will only be called on authority
 	await_async_answer(next_process_id, trigger_signal)
@@ -85,7 +85,7 @@ func async_process_remote(_sender_id: int, resource_path:String, process_id:int)
 	await async_process.RunProcess()
 	#async_process_done.rpc_id(1, process_id)
 	if communication_line.is_server():
-		async_process_done(999, process_id) #We are the server so we can call async_process_done locally
+		async_process_done(-1, process_id) #We are the server so we can call async_process_done locally
 	else:
 		communication_line.call_function_on_peer(&"async_process_done", [process_id], 1) #We are the client so we need to notify the server that we are finished
 

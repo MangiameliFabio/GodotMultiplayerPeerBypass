@@ -26,7 +26,7 @@ func _ready_composite_node() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _ready_authority() -> void:
-	if _composite_node.GetCommunicationLine().is_communication_authority():
+	if _composite_node.IsAuthority():
 		$MeshInstance3D.visible = false
 
 func UpdateTransfrom(newTransform: Transform3D, dir: Vector3):
@@ -36,7 +36,7 @@ func UpdateTransfrom(newTransform: Transform3D, dir: Vector3):
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if _composite_node.GetCommunicationLine().is_communication_authority():
+	if _composite_node.IsAuthority():
 		_current_move_speed = moveSpeed
 		var direction = updateDirection()
 		
@@ -95,7 +95,7 @@ func _ready():
 	_composite_node.RegisterCallback(\"init_authority\", init_authority)
 
 func init_authority(player_id:int):
-	if _composite_node.GetCommunicationLine().is_communication_authority():
+	if _composite_node.IsAuthority():
 		make_current()
 "
 
